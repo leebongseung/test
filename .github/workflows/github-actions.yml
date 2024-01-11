@@ -15,14 +15,12 @@ permissions:
 jobs:
   CI-CD:
     runs-on: ubuntu-latest # 실행 환경 지정 (ubuntu최신 버전에서 script를 실행)
+    steps: # 실행 스텝 지정
 
-		# 실행 스텝 지정
-    steps:
-
-		# 지정한 저장소(현재 레포지토리)에서 코드를 워크 플로우 환경으로 가져오도록 하는 github action
+    # 지정한 저장소(현재 레포지토리)에서 코드를 워크 플로우 환경으로 가져오도록 하는 github action
     - uses: actions/checkout@v3
-		## jdk setting
-		- name: Set up JDK 17
+    ## jdk setting
+    - name: Set up JDK 17
       uses: actions/setup-java@v3
       with:
         java-version: '17'
@@ -30,7 +28,7 @@ jobs:
     
 		# applications.properties 설정하기 
 		# github secret 에서 설정해줘야한다.
-		- uses: actions/checkout@v3
+    - uses: actions/checkout@v3
     - run: touch ./src/main/resources/application.properties
     - run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.properties
     - run: cat ./src/main/resources/application.properties
@@ -50,12 +48,12 @@ jobs:
     # dockerfile을 통해 이미지를 빌드하고, 이를 docker hub repo로 push
     # 이때 사용되는 ${{ secrets.DOCER_REPO }}/directors-dev가 위에서 만든 도커 repository이다.
     - name: Build with Gradle
-			run: |
+      run: |
         chmod +x ./gradlew
         ./gradlew clean build -x test
 		
-		- name: Set up Docker Buildx
-		      uses: docker/setup-buildx-action@v2
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
 
     - name: Build and push
       uses: docker/build-push-action@v4
