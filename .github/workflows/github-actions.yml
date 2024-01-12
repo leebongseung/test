@@ -33,45 +33,35 @@ jobs:
     - run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.properties
     - run: cat ./src/main/resources/application.properties
 
-    ## gradle caching
-    - name: Gradle Caching
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
-
-
-    # dockerfile을 통해 이미지를 빌드하고, 이를 docker hub repo로 push
-    # 이때 사용되는 ${{ secrets.DOCER_REPO }}/directors-dev가 위에서 만든 도커 repository이다.
+    # gradle을 통해 소스를 빌드.
     - name: Build with Gradle
       run: |
         chmod +x ./gradlew
         ./gradlew clean build -x test
 
-    - name: Log in to Docker Hub
-      uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+    # dockerfile을 통해 이미지를 빌드하고, 이를 docker hub repo로 push
+    # 이때 사용되는 ${{ secrets.DOCER_REPO }}/directors-dev가 위에서 만든 도커 repository이다.
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
       with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
-    - name: Build and Release
-      run: |
-          docker build -t ${{secrets.DOCKERHUB_REPO}} .
-          docker tag ${{secrets.DOCKERHUB_REPO}}:latest ${{secrets.DOCKERHUB_USERNAME}}/${{secrets.DOCKERHUB_REPO}}:latest
-          docker push ${{secrets.DOCKERHUB_USERNAME}}/${{secrets.DOCKERHUB_REPO}}:latest
+    - name: Build and push
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: ${{ secrets.DOCKERHUB_REPO }}
 
     ## deploy to production
-    - name: Deploy to prod
+    - name: Deploy to server
       uses: appleboy/ssh-action@master
       id: deploy-prod
-      if: contains(github.ref, 'main')
       with:
           host: ${{ secrets.HOST_PROD }}
           username: ec2-user
