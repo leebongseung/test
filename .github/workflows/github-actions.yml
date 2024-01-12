@@ -62,9 +62,9 @@ jobs:
     - name: Deploy to server
       uses: appleboy/ssh-action@master
       with:
+          key: ${{ secrets.PRIVATE_KEY }}
           host: ${{ secrets.HOST_PROD }}
           username: ubuntu
-          key: ${{ secrets.PRIVATE_KEY }}
           port: 22
           script: |
               sudo docker rm -f $(docker ps -qa)
