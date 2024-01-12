@@ -64,9 +64,8 @@ jobs:
       id: deploy-prod
       with:
           host: ${{ secrets.HOST_PROD }}
-          username: sshKey
+          username: yui5227@gmail.com
           key: ${{ secrets.PRIVATE_KEY }}
-          envs: GITHUB_SHA
           script: |
               sudo docker rm -f $(docker ps -qa)
               sudo docker pull ${{secrets.DOCKERHUB_USERNAME}}/${{secrets.DOCKERHUB_REPO}}:latest
