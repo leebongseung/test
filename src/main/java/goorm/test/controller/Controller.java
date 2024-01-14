@@ -8,6 +8,6 @@ public class Controller {
 
     @GetMapping("/api/test")
     public String test(){
-        return "test";
+        return "cicd test";
     }
 }
